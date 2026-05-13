@@ -18,7 +18,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
+      
+      - name: Create logs directory
+        run: mkdir -p logs
       
       - name: Install dependencies
         run: |
@@ -42,3 +45,9 @@ jobs:
           name: news-collection-logs
           path: logs/
           retention-days: 7
+      
+      - name: Show execution log
+        if: always()
+        run: |
+          echo "Workflow execution completed"
+          ls -la logs/ || echo "No logs found"
