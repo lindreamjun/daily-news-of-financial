@@ -32,16 +32,16 @@ try:
     
     # Check environment variables
     log_write("\n=== STEP 1: CHECKING ENVIRONMENT VARIABLES ===")
-    email_recipient = os.getenv('EMAIL_RECIPIENT')
-    smtp_server = os.getenv('SMTP_SERVER')
-    smtp_port = os.getenv('SMTP_PORT')
-    smtp_username = os.getenv('SMTP_USERNAME')
-    smtp_password = os.getenv('SMTP_PASSWORD')
+    email_recipient = os.getenv('EMAIL_RECIPIENT', '').strip()
+    smtp_server = os.getenv('SMTP_SERVER', '').strip()
+    smtp_port = os.getenv('SMTP_PORT', '').strip()
+    smtp_username = os.getenv('SMTP_USERNAME', '').strip()
+    smtp_password = os.getenv('SMTP_PASSWORD', '').strip()
     
-    log_write(f"EMAIL_RECIPIENT: {email_recipient}")
-    log_write(f"SMTP_SERVER: {smtp_server}")
-    log_write(f"SMTP_PORT: {smtp_port}")
-    log_write(f"SMTP_USERNAME: {smtp_username}")
+    log_write(f"EMAIL_RECIPIENT: {email_recipient if email_recipient else 'NOT SET'}")
+    log_write(f"SMTP_SERVER: {smtp_server if smtp_server else 'NOT SET'}")
+    log_write(f"SMTP_PORT: {smtp_port if smtp_port else 'NOT SET'}")
+    log_write(f"SMTP_USERNAME: {smtp_username if smtp_username else 'NOT SET'}")
     log_write(f"SMTP_PASSWORD: {'SET' if smtp_password else 'NOT SET'}")
     
     # Validate
@@ -197,7 +197,9 @@ try:
     log_write(f"✅ TLS started")
     
     log_write(f"🔑 Authenticating...")
-    server.login(smtp_username, smtp_password)
+    # IMPORTANT: Ensure credentials are ASCII-safe
+    # For Gmail, use 16-character app password (not account password)
+    server.login(smtp_username.encode('utf-8').decode('ascii'), smtp_password.encode('utf-8').decode('ascii'))
     log_write(f"✅ Authentication successful")
     
     log_write(f"📤 Sending email...")
@@ -210,18 +212,17 @@ try:
     log_write("\n" + "=" * 80)
     log_write("✅ SUCCESS! Email sent to " + email_recipient)
     log_write("=" * 80)
-    log_write("\n💡 如果没收到邮件，请检查：")
-    log_write("   1. 垃圾邮件文件夹 (Spam/Promotions folder)")
-    log_write("   2. Gmail 过滤规则 (Filters and Blocked Addresses)")
-    log_write("   3. SMTP_USERNAME 和 EMAIL_RECIPIENT 是否为同一账户")
-    log_write("\n💡 If you don't receive the email:")
-    log_write("   1. Check Spam/Promotions folder")
-    log_write("   2. Check Gmail Filters")
-    log_write("   3. Verify SMTP_USERNAME and EMAIL_RECIPIENT are the same account")
 
 except Exception as e:
     log_write(f"\n❌ ERROR: {str(e)}")
     log_write(f"Error type: {type(e).__name__}")
     import traceback
     log_write(traceback.format_exc())
+    
+    log_write("\n💡 TROUBLESHOOTING:")
+    log_write("   1. For Gmail: Use 16-character APP PASSWORD (not account password)")
+    log_write("   2. Generate new password at: https://myaccount.google.com/apppasswords")
+    log_write("   3. Update SMTP_PASSWORD secret with the new password")
+    log_write("   4. Ensure SMTP_USERNAME and EMAIL_RECIPIENT use same Gmail account")
+    
     sys.exit(1)
