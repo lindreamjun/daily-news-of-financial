@@ -44,8 +44,15 @@ try:
     log_write(f"SMTP_USERNAME: {smtp_username}")
     log_write(f"SMTP_PASSWORD: {'SET' if smtp_password else 'NOT SET'}")
     
-    if not all([email_recipient, smtp_server, smtp_port, smtp_username, smtp_password]):
-        raise ValueError("❌ Missing required environment variables!")
+    # Validate
+    if not email_recipient:
+        raise ValueError("❌ EMAIL_RECIPIENT not set")
+    if not smtp_username:
+        raise ValueError("❌ SMTP_USERNAME not set")
+    if not smtp_password:
+        raise ValueError("❌ SMTP_PASSWORD not set")
+    
+    log_write(f"\n✅ All required variables are set")
     
     # Load config
     log_write("\n=== STEP 2: LOADING CONFIGURATION ===")
@@ -60,62 +67,157 @@ try:
     categories_count = len(config.get('categories', {}))
     log_write(f"✅ Config loaded: {sources_count} sources, {categories_count} categories")
     
-    # Generate simple email
-    log_write("\n=== STEP 3: GENERATING EMAIL ===")
+    # Import feedparser
+    log_write("\n=== STEP 3: COLLECTING NEWS ===")
+    try:
+        import feedparser
+        log_write("✅ feedparser module loaded")
+        
+        all_articles = {}
+        total_articles = 0
+        
+        for category_key, category_info in config.get('categories', {}).items():
+            category_name = category_info.get('name', '')
+            log_write(f"\n  📂 {category_name}")
+            all_articles[category_key] = []
+            
+            sources = category_info.get('sources', [])
+            for source_name in sources:
+                source_info = config['premium_sources'].get(source_name, {})
+                rss_feed = source_info.get('rss_feed')
+                
+                if not rss_feed:
+                    continue
+                
+                try:
+                    feed = feedparser.parse(rss_feed)
+                    count = 0
+                    for entry in feed.entries[:10]:
+                        if count >= 3:
+                            break
+                        article = {
+                            'title': entry.get('title', 'No title'),
+                            'link': entry.get('link', ''),
+                            'source': source_name
+                        }
+                        if article['title'] and article['link']:
+                            all_articles[category_key].append(article)
+                            count += 1
+                            total_articles += 1
+                    
+                    if count > 0:
+                        log_write(f"    ✅ {source_name}: {count} articles")
+                except Exception as e:
+                    log_write(f"    ⚠️ {source_name}: {str(e)[:50]}")
+        
+        log_write(f"\n✅ Total articles collected: {total_articles}")
+        
+    except ImportError as e:
+        log_write(f"⚠️ feedparser import failed: {e}")
+        all_articles = {}
+    
+    # Generate email
+    log_write("\n=== STEP 4: GENERATING EMAIL ===")
+    
     html_content = f"""
     <html>
-    <head><meta charset="UTF-8"></head>
+    <head><meta charset="UTF-8"><style>
+    body {{ font-family: Arial, sans-serif; background: #f5f5f5; }}
+    .container {{ max-width: 800px; margin: 0 auto; background: white; padding: 20px; }}
+    .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }}
+    .header h1 {{ margin: 0; font-size: 2em; }}
+    .category {{ background: #f9f9f9; margin: 20px 0; padding: 15px; border-left: 4px solid #667eea; }}
+    .article {{ background: white; margin: 10px 0; padding: 10px; border: 1px solid #e0e0e0; }}
+    .article a {{ color: #667eea; text-decoration: none; }}
+    .footer {{ text-align: center; color: #666; font-size: 0.9em; margin-top: 30px; }}
+    </style></head>
     <body>
-        <h1>📰 全球新闻日报</h1>
-        <p>Global News Daily Digest</p>
-        <p>Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-        <hr>
-        <h2>✅ 系统测试成功！System Test Successful!</h2>
-        <p>配置已加载 | Configuration loaded successfully</p>
-        <p>新闻源数量: {sources_count}</p>
-        <p>分类数量: {categories_count}</p>
-        <p>This is a test email to verify the system is working.</p>
-        <hr>
-        <p style="font-size: 0.9em; color: #666;">© 2026 Global News Daily | Powered by GitHub Actions</p>
+        <div class="container">
+            <div class="header">
+                <h1>📰 全球新闻日报</h1>
+                <p>Global News Daily Digest</p>
+                <p>{datetime.now().strftime('%Y年%m月%d日 | %B %d, %Y')}</p>
+            </div>
+    """
+    
+    if all_articles:
+        for category_key, category_info in config.get('categories', {}).items():
+            category_name = category_info.get('name', '')
+            articles = all_articles.get(category_key, [])
+            
+            html_content += f'<div class="category"><h2>{category_name}</h2>'
+            
+            if not articles:
+                html_content += '<p style="color: #999;">暂无新闻 | No news</p>'
+            else:
+                for idx, article in enumerate(articles, 1):
+                    html_content += f"""
+                    <div class="article">
+                        <strong>[{idx}] {article.get('title', '')}</strong><br>
+                        <small>Source: {article.get('source', '')}</small><br>
+                        <a href="{article.get('link', '#')}" target="_blank">📖 阅读原文 | Read More</a>
+                    </div>
+                    """
+            
+            html_content += '</div>'
+    else:
+        html_content += '<p style="color: #999; padding: 20px;">暂无新闻 | No news available</p>'
+    
+    html_content += """
+            <div class="footer">
+                <p>本日报仅供参考 | This digest is for reference only</p>
+                <p>© 2026 Global News Daily | Powered by GitHub Actions</p>
+            </div>
+        </div>
     </body>
     </html>
     """
     log_write("✅ Email HTML generated")
     
     # Send email
-    log_write("\n=== STEP 4: SENDING EMAIL ===")
-    log_write(f"📧 Connecting to {smtp_server}:{smtp_port}")
+    log_write("\n=== STEP 5: SENDING EMAIL ===")
+    log_write(f"📧 Target email: {email_recipient}")
+    log_write(f"📧 From account: {smtp_username}")
+    log_write(f"📧 Server: {smtp_server}:{smtp_port}")
     
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = f"📰 全球新闻日报 测试 | Global News Daily Test - {datetime.now().strftime('%Y-%m-%d')}"
+    msg['Subject'] = f"📰 全球新闻日报 | Global News Daily - {datetime.now().strftime('%Y-%m-%d')}"
     msg['From'] = smtp_username
     msg['To'] = email_recipient
     
     html_part = MIMEText(html_content, 'html', 'utf-8')
     msg.attach(html_part)
     
-    log_write(f"📧 Creating SMTP connection...")
+    log_write(f"🔗 Connecting to SMTP server...")
     server = smtplib.SMTP(smtp_server, int(smtp_port), timeout=10)
-    log_write(f"✅ Connected to SMTP server")
+    log_write(f"✅ Connected")
     
     log_write(f"🔒 Starting TLS...")
     server.starttls()
     log_write(f"✅ TLS started")
     
-    log_write(f"🔑 Logging in as {smtp_username}...")
+    log_write(f"🔑 Authenticating...")
     server.login(smtp_username, smtp_password)
-    log_write(f"✅ Login successful")
+    log_write(f"✅ Authentication successful")
     
-    log_write(f"📤 Sending email to {email_recipient}...")
-    server.send_message(msg)
-    log_write(f"✅ Email sent successfully!")
+    log_write(f"📤 Sending email...")
+    result = server.send_message(msg)
+    log_write(f"✅ Email sent")
     
     server.quit()
     log_write(f"✅ Connection closed")
     
     log_write("\n" + "=" * 80)
-    log_write("✅ ALL STEPS COMPLETED SUCCESSFULLY")
+    log_write("✅ SUCCESS! Email sent to " + email_recipient)
     log_write("=" * 80)
+    log_write("\n💡 如果没收到邮件，请检查：")
+    log_write("   1. 垃圾邮件文件夹 (Spam/Promotions folder)")
+    log_write("   2. Gmail 过滤规则 (Filters and Blocked Addresses)")
+    log_write("   3. SMTP_USERNAME 和 EMAIL_RECIPIENT 是否为同一账户")
+    log_write("\n💡 If you don't receive the email:")
+    log_write("   1. Check Spam/Promotions folder")
+    log_write("   2. Check Gmail Filters")
+    log_write("   3. Verify SMTP_USERNAME and EMAIL_RECIPIENT are the same account")
 
 except Exception as e:
     log_write(f"\n❌ ERROR: {str(e)}")
