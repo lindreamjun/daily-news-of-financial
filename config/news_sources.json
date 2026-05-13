@@ -1,0 +1,132 @@
+{
+  "premium_sources": {
+    "Bloomberg": {
+      "name": "彭博社",
+      "url": "https://www.bloomberg.com/",
+      "credibility": "顶级金融新闻机构",
+      "rss_feed": "https://www.bloomberg.com/feed/podcast/etf-report.xml"
+    },
+    "FinancialTimes": {
+      "name": "金融时报",
+      "url": "https://www.ft.com/",
+      "rss_feed": "https://feeds.ft.com/home/rss",
+      "credibility": "全球领先财经媒体"
+    },
+    "TheEconomist": {
+      "name": "经济学人",
+      "url": "https://www.economist.com/",
+      "rss_feed": "https://www.economist.com/printedition/rss.xml",
+      "credibility": "国际政治经济权威"
+    },
+    "WallStreetJournal": {
+      "name": "华尔街日报",
+      "url": "https://www.wsj.com/",
+      "rss_feed": "https://feeds.wsj.com/xml/rss/3_7085.xml",
+      "credibility": "美国最大商业报纸"
+    },
+    "TheAtlantic": {
+      "name": "大西洋月刊",
+      "url": "https://www.theatlantic.com/",
+      "rss_feed": "https://www.theatlantic.com/feed/all/",
+      "credibility": "美国深度报道杂志"
+    },
+    "Reuters": {
+      "name": "路透社",
+      "url": "https://www.reuters.com/",
+      "rss_feed": "https://www.reuters.com/finance/",
+      "credibility": "全球通讯社，中立报道"
+    },
+    "BBC": {
+      "name": "BBC",
+      "url": "https://www.bbc.com/",
+      "rss_feed": "http://feeds.bbc.co.uk/news/rss.xml",
+      "credibility": "英国公共广播电视台"
+    },
+    "APNews": {
+      "name": "美联社",
+      "url": "https://apnews.com/",
+      "credibility": "美国最大通讯社"
+    },
+    "France24": {
+      "name": "法国24台",
+      "url": "https://www.france24.com/",
+      "rss_feed": "https://www.france24.com/en/rss",
+      "credibility": "法国国际新闻频道"
+    },
+    "DeutscheWelle": {
+      "name": "德国之声",
+      "url": "https://www.dw.com/",
+      "rss_feed": "https://www.dw.com/en/rss.xml",
+      "credibility": "德国国际广播电视"
+    },
+    "ChinaDaily": {
+      "name": "中国日报",
+      "url": "https://www.chinadaily.com.cn/",
+      "rss_feed": "http://www.chinadaily.com.cn/rss/channel_rss.xml",
+      "credibility": "中国官方英文报纸"
+    },
+    "CNBC": {
+      "name": "CNBC",
+      "url": "https://www.cnbc.com/",
+      "rss_feed": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+      "credibility": "美国财经电视频道"
+    }
+  },
+  "categories": {
+    "global_news": {
+      "name": "世界在发生什么？",
+      "keywords": ["world", "international", "global", "news"],
+      "sources": ["Reuters", "BBC", "APNews", "France24", "DeutscheWelle"]
+    },
+    "leaders_actions": {
+      "name": "各国领导人做了什么？",
+      "keywords": ["president", "minister", "government", "politics", "policy", "parliament"],
+      "sources": ["FinancialTimes", "BBC", "Reuters", "TheAtlantic", "France24"]
+    },
+    "asia_news": {
+      "name": "亚洲发生了什么？",
+      "keywords": ["Asia", "Japan", "Korea", "India", "Southeast", "Taiwan", "Hong Kong"],
+      "sources": ["Reuters", "Bloomberg", "FinancialTimes", "BBC"]
+    },
+    "china_news": {
+      "name": "中国发生了什么？",
+      "keywords": ["China", "Beijing", "Shanghai", "economy", "politics", "tech", "trade"],
+      "sources": ["Bloomberg", "Reuters", "FinancialTimes", "BBC", "ChinaDaily"]
+    },
+    "ai_technology": {
+      "name": "AI与科技创新",
+      "keywords": ["AI", "artificial intelligence", "machine learning", "technology", "innovation", "tech"],
+      "sources": ["Bloomberg", "WallStreetJournal", "TheAtlantic", "Reuters", "CNBC"]
+    },
+    "finance_economy": {
+      "name": "金融与经济",
+      "keywords": ["finance", "economy", "market", "stock", "investment", "banking", "trade"],
+      "sources": ["Bloomberg", "FinancialTimes", "WallStreetJournal", "Reuters", "TheEconomist", "CNBC"]
+    },
+    "science": {
+      "name": "科学发现",
+      "keywords": ["science", "research", "discovery", "space", "medical", "breakthrough"],
+      "sources": ["Reuters", "BBC", "APNews", "TheAtlantic"]
+    },
+    "business": {
+      "name": "商业与产业",
+      "keywords": ["business", "company", "industry", "startup", "earnings", "CEO"],
+      "sources": ["Bloomberg", "WallStreetJournal", "Reuters", "FinancialTimes", "CNBC"]
+    },
+    "culture": {
+      "name": "文化与艺术",
+      "keywords": ["culture", "art", "entertainment", "film", "music", "book"],
+      "sources": ["TheAtlantic", "BBC", "Reuters"]
+    },
+    "economic_indicators": {
+      "name": "经济金融指标",
+      "keywords": ["GDP", "inflation", "unemployment", "interest rate", "currency", "stock", "bond"],
+      "sources": ["Bloomberg", "FinancialTimes", "WallStreetJournal", "Reuters", "TheEconomist", "CNBC"]
+    }
+  },
+  "max_articles_per_category": 20,
+  "quality_filters": {
+    "min_word_count": 100,
+    "language": "en"
+  }
+}
